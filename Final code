@@ -1,0 +1,49 @@
+#include <Stepper.h> // Include the header file
+
+// change this to the number of steps on your motor
+#define STEPS 32
+
+// create an instance of the stepper class using the steps and pins
+Stepper stepper(STEPS, 8, 10, 9, 11);
+
+int val = 0;
+int buttonPin = 2; // the pin that the button is connected to
+int buttonState = 0; // variable for reading the button status
+
+unsigned long startMillis; // variable to store the start time
+unsigned long currentMillis; // variable to store the current time
+const unsigned long eightHours = 8UL * 60UL * 60UL * 1000UL; // duration of 8 hours in milliseconds
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(buttonPin, INPUT_PULLUP); // set the button pin as an input with internal pull-up resistor
+  stepper.setSpeed(1000); // set the speed to 1000 steps per second
+  
+  startMillis = millis(); // initialize the start time
+}
+
+void loop() {
+  currentMillis = millis(); // get the current time
+  
+  // check if 8 hours have elapsed since the code started running
+  if (currentMillis - startMillis >= eightHours) {
+    // reset the code by jumping to the start of the program
+    asm volatile ("  jmp 0");
+  }
+  
+  buttonState = digitalRead(buttonPin); // read the state of the button
+  if (buttonState == HIGH) { // if button is pressed
+    stepper.step(6700); // move the motor 400 steps
+    delay(54000000); // wait for 10 seconds before stopping the motor
+    stepper.step(0); // stop the motor
+  }
+
+  if (Serial.available() > 0) {
+    val = Serial.parseInt();
+    stepper.step(val);
+    Serial.println(val); //for debugging
+  }
+}
+
+
+
